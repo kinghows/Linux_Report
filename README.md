@@ -1,5 +1,5 @@
 # Linux_Report
-Linux Report is a tool to help trouble shoot system base linux.
+Linux Report is a tool to help trouble shoot system base on linux.
 
 pip install prettytable
 
