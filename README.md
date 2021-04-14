@@ -3,7 +3,7 @@ Linux Report is a tool to help trouble shoot application base on linux.
 
 pip install prettytable
 
-Edit application commands in linux_report.ini.
+Edit application commands in linux_report.ini
 
 execute:
 
