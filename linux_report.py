@@ -35,7 +35,7 @@ def f_print_table_txt(rows, title, style):
     fields = []
     f_print_title(title)
     table = prettytable.PrettyTable()
-    for row in rows[1:]:
+    for row in rows:
         table.add_row(row)
     if style not in (0,-1):
         for k in style.keys():
