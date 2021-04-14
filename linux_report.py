@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # Linux_Report V1.0.0 for python3
-# trouble shoot Linux
+# Trouble shoot application base on Linux
 # Copyright (C) 2021-2021 Kinghow - Kinghow@hotmail.com
 # Git repository available at https://github.com/kinghows/Linux_Report
 
@@ -25,54 +25,31 @@ tab1="="
 tab2="*"
 linesize=104
 
-def f_get_query_value(conn, query):
-    cursor = conn.cursor()
-    getNum = cursor.execute(query)
-    if getNum > 0:
-        result = cursor.fetchone()
-    else:
-        result = ['0']
-    cursor.close()
-    return result[0]
-
-def f_get_query_record(conn, query):
-    cursor = conn.cursor()
-    cursor.execute(query)
-    records = cursor.fetchall()
-    cursor.close()
-    return records
-
 def f_print_title(title):
     print ()
     print (int((linesize-4)/2 - int(len(title)/2)) * tab1, title, int((linesize-4)/2+1 - int(len(title)/2)) * tab1)
     print ()
 
-def f_print_table_body(rows, style,tab):
-    for row in rows:
-        k = 0
-        for col in row:
-            k += 1
-            print (tab,end='')
-            if style[k].split(',')[2] == 'l':
-                print (str(col).ljust(int(style[k].split(',')[1])),end='')
-            elif style[k].split(',')[2] == 'r':
-                print (str(col).rjust(int(style[k].split(',')[1])),end='')
-            else:
-                print (str(col).center(int(style[k].split(',')[1])),end='')
-        print (tab)
-
 def f_print_table_txt(rows, title, style):
     field_names = []
+    fields = []
     f_print_title(title)
     table = prettytable.PrettyTable()
-    for k in style.keys():
-        field_names.append(style[k].split(',')[0])
-    table.field_names = field_names
-    for k in style.keys():
-        table.align[style[k].split(',')[0]] = style[k].split(',')[1]
-    for row in rows:
+    for row in rows[1:]:
         table.add_row(row)
-    print (table)
+    if style not in (0,-1):
+        for k in style.keys():
+            field_names.append(style[k].split(',')[0])
+        table.field_names = field_names
+        for k in style.keys():
+            table.align[style[k].split(',')[0]] = style[k].split(',')[1]
+        for k in style.keys():
+            if style[k].split(',')[1] != 'n':
+                fields.append(style[k].split(',')[0])
+        print(table.get_string(fields = fields))
+    else:
+        table.header =False
+        print(table)
 
 def f_print_table_html(rows, title, style):
     print ("""<p /><h3 class="awr"><a class="awr" name="99999"></a>""" + title + "</h3><p />")
@@ -80,10 +57,11 @@ def f_print_table_html(rows, title, style):
 
     print ("""<tr>""",end='')
     for k in style.keys():
-        v = style[k]
-        print ("""<th class="awrbg">""",end='')
-        print (v.split(',')[0],end='')
-        print ("""</th>""",end='')
+        if style[k].split(',')[1] != 'n':
+            v = style[k]
+            print ("""<th class="awrbg">""",end='')
+            print (v.split(',')[0],end='')
+            print ("""</th>""",end='')
     print ("""</tr>""")
 
     linenum = 0
@@ -100,7 +78,7 @@ def f_print_table_html(rows, title, style):
             k += 1
             if style[k].split(',')[1] == 'r':
                 print ("""<td align="right" class='"""+classs+"'>"+str(col)+"</td>",end='')
-            else:
+            elif style[k].split(',')[1] == 'l':
                 print ("""<td class='"""+classs+"'>"+str(col)+"</td>",end='')
         print ("</tr>")
     print ("""</table>
@@ -115,16 +93,20 @@ def f_print_table(rows,title,style,save_as):
     elif save_as == "html":
         f_print_table_html(rows, title, style)
 
-def f_print_query_table(conn, title, cmd, style,save_as):
-    rows = f_get_query_record(conn, query)
-    f_print_table(rows,title,style,save_as)
+def f_print_cmd(title, cmd, style,save_as):
+    rows =[]
+    for line in os.popen(cmd).readlines():
+        rows.append(line.strip().split())
+    
+    if strstyle!='0':
+        del rows[0]
+    style = eval(style)
+    f_print_table(rows, title, style,save_as)
 
 def f_print_caption(report_title,save_as):
     if save_as == "txt":
         print (tab2 * linesize)
         print (tab2, report_title.center(linesize - 4), tab2)
-        print (tab2, 'Kinghow@hotmail.com'.center(linesize - 4), tab2)
-        print (tab2, 'https://github.com/kinghows/Linux_Report'.center(linesize - 4), tab2)
         print (tab2 * linesize)
     elif save_as == "html":
         print ("""
@@ -226,30 +208,13 @@ def f_print_linux_info(save_as):
 
     f_print_table(rows, title, style,save_as)
 
-def f_print_filesystem_info(save_as):
-    title = "Filesystem info"
-    style = {1: 'Filesystem,l',2: 'Size,r',3: 'Used,r',4: 'Avail,r',5: 'Use %,r',6: ' Mounted on,l'}
-    rows =[]
-    file_info = []
-    j = 0
-    for line in os.popen('df -h').readlines():
-        for eachList in line.strip().split():
-            file_info.append(eachList)
-            j +=1
-    i = 6
-    while i<j-6:
-        rows.append([file_info[i+1],file_info[i+2],file_info[i+3],file_info[i+4],file_info[i+5],file_info[i+6]])
-        i += 6
-    f_print_table(rows, title, style,save_as)
-
-
 if __name__=="__main__":
     config_file="linux_report.ini"
     option = []
     save_as = "txt"
     report_title=""
     report_count = 0
-    
+
     opts, args = getopt.getopt(sys.argv[1:], "p:s:")
     for o,v in opts:
         if o == "-p":
@@ -267,16 +232,14 @@ if __name__=="__main__":
     if config.get("option","linux_info")=='ON':
         f_print_linux_info(save_as)
 
-    if config.get("option","filesystem_info")=='ON':
-        f_print_filesystem_info(save_as)
-
     n = 1
     while n <= report_count:
-        title = config.get ( "report", "title"+str(n))
-        cmd = config.get ( "report", "cmd"+str(n))
-        strstyle = config.get ( "report", "style"+str(n))
-        style = eval(strstyle)
-        f_print_query_table(conn, title, cmd, style,save_as)
+        switch = config.get ( "report", "switch"+str(n))
+        if switch == 'ON':
+            title = config.get ( "report", "title"+str(n))
+            cmd = config.get ( "report", "cmd"+str(n))
+            strstyle = config.get ( "report", "style"+str(n))
+            f_print_cmd(title, cmd, strstyle,save_as)
         n += 1
 
     f_print_ending(save_as)
