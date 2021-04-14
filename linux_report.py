@@ -31,13 +31,13 @@ def f_print_title(title):
     print ()
 
 def f_print_table_txt(rows, title, style):
-    field_names = []
-    fields = []
     f_print_title(title)
-    table = prettytable.PrettyTable()
-    for row in rows:
-        table.add_row(row)
-    if style not in (0,-1):
+    if isinstance(style,dict):
+        field_names = []
+        fields = []
+        table = prettytable.PrettyTable()
+        for row in rows:
+            table.add_row(row)
         for k in style.keys():
             field_names.append(style[k].split(',')[0])
         table.field_names = field_names
@@ -48,21 +48,22 @@ def f_print_table_txt(rows, title, style):
                 fields.append(style[k].split(',')[0])
         print(table.get_string(fields = fields))
     else:
-        table.header =False
-        print(table)
+        for row in rows:
+            print(row)
 
 def f_print_table_html(rows, title, style):
     print ("""<p /><h3 class="awr"><a class="awr" name="99999"></a>""" + title + "</h3><p />")
     print ("""<table border="1">""")
 
-    print ("""<tr>""",end='')
-    for k in style.keys():
-        if style[k].split(',')[1] != 'n':
-            v = style[k]
-            print ("""<th class="awrbg">""",end='')
-            print (v.split(',')[0],end='')
-            print ("""</th>""",end='')
-    print ("""</tr>""")
+    if isinstance(style,dict):
+        print ("""<tr>""",end='')
+        for k in style.keys():
+            if style[k].split(',')[1] != 'n':
+                v = style[k]
+                print ("""<th class="awrbg">""",end='')
+                print (v.split(',')[0],end='')
+                print ("""</th>""",end='')
+        print ("""</tr>""")
 
     linenum = 0
     for row in rows:
@@ -73,13 +74,17 @@ def f_print_table_html(rows, title, style):
             classs='awrc'
         else:
             classs='awrnc'
-
-        for col in row:
-            k += 1
-            if style[k].split(',')[1] == 'r':
-                print ("""<td align="right" class='"""+classs+"'>"+str(col)+"</td>",end='')
-            elif style[k].split(',')[1] == 'l':
-                print ("""<td class='"""+classs+"'>"+str(col)+"</td>",end='')
+        if isinstance(style,dict): 
+            for col in row:
+                k += 1
+                if style[k].split(',')[1] == 'r':
+                    print ("""<td align="right" class='"""+classs+"'>"+str(col)+"</td>",end='')
+                elif style[k].split(',')[1] == 'l':
+                    print ("""<td align="left" class='"""+classs+"'>"+str(col)+"</td>",end='')
+                elif style[k].split(',')[1] == 'c':
+                    print ("""<td align="center" class='"""+classs+"'>"+str(col)+"</td>",end='')
+        else:
+            print ("""<td class='"""+classs+"'>"+str(row)+"</td>",end='')            
         print ("</tr>")
     print ("""</table>
 <br /><a class="awr" href="#top">Back to Top</a>
@@ -93,15 +98,21 @@ def f_print_table(rows,title,style,save_as):
     elif save_as == "html":
         f_print_table_html(rows, title, style)
 
-def f_print_cmd(title, cmd, style,save_as):
+def f_print_cmd(title,cmd,style,save_as):
     rows =[]
-    for line in os.popen(cmd).readlines():
-        rows.append(line.strip().split())
+    if len(style)>0: 
+        style = eval(style)
+
+    lines = os.popen(cmd).readlines()
+    for line in lines:
+        if isinstance(style,dict):
+            rows.append(line.strip().split())
+        else:
+            rows.append(line.strip())
     
-    if strstyle!='0':
+    if isinstance(style,dict):
         del rows[0]
-    style = eval(style)
-    f_print_table(rows, title, style,save_as)
+    f_print_table(rows,title,style,save_as)
 
 def f_print_caption(report_title,save_as):
     if save_as == "txt":
