@@ -30,12 +30,14 @@ def f_print_title(title):
     print (int((linesize-4)/2 - int(len(title)/2)) * tab1, title, int((linesize-4)/2+1 - int(len(title)/2)) * tab1)
     print ()
 
-def f_print_table_txt(rows, title, style):
+def f_print_table_txt(rows, title, style,debug):
     f_print_title(title)
     if isinstance(style,dict):
         field_names = []
         fields = []
         table = prettytable.PrettyTable()
+        if debug=='ON':
+            print(rows)
         for row in rows:
             table.add_row(row)
         for k in style.keys():
@@ -92,27 +94,32 @@ def f_print_table_html(rows, title, style):
 <p />
         """)
 
-def f_print_table(rows,title,style,save_as):
+def f_print_table(rows,title,style,save_as,debug):
     if save_as == "txt":
-        f_print_table_txt(rows, title, style)
+        f_print_table_txt(rows, title, style,debug)
     elif save_as == "html":
         f_print_table_html(rows, title, style)
 
-def f_print_cmd(title,cmd,style,save_as):
+def f_print_cmd(title,cmd,style,filter,save_as,debug):
     rows =[]
     if len(style)>0: 
         style = eval(style)
 
     lines = os.popen(cmd).readlines()
     for line in lines:
-        if isinstance(style,dict):
-            rows.append(line.strip().split())
-        else:
-            rows.append(line.strip())
+        row = line.strip().strip('(B[m').strip('[4m[1m')
+        if row:
+            if isinstance(style,dict):
+                rows.append(row.split())
+            else:
+                rows.append(row)
+
+    if len(filter)>0 and isinstance(int(filter),int):
+        rows = rows[int(filter):]
     
     if isinstance(style,dict):
         del rows[0]
-    f_print_table(rows,title,style,save_as)
+    f_print_table(rows,title,style,save_as,debug)
 
 def f_print_caption(report_title,save_as):
     if save_as == "txt":
@@ -217,7 +224,7 @@ def f_print_linux_info(save_as):
             pids.append(subdir)
     rows.append(["Processes",'Total number of running : {0}'.format(len(pids))])
 
-    f_print_table(rows, title, style,save_as)
+    f_print_table(rows, title, style,save_as,"OFF")
 
 if __name__=="__main__":
     config_file="linux_report.ini"
@@ -225,6 +232,7 @@ if __name__=="__main__":
     save_as = "txt"
     report_title=""
     report_count = 0
+    debug ="OFF"
 
     opts, args = getopt.getopt(sys.argv[1:], "p:s:")
     for o,v in opts:
@@ -242,6 +250,7 @@ if __name__=="__main__":
 
     if config.get("option","linux_info")=='ON':
         f_print_linux_info(save_as)
+    debug = config.get("option","debug")
 
     n = 1
     while n <= report_count:
@@ -249,8 +258,9 @@ if __name__=="__main__":
         if switch == 'ON':
             title = config.get ( "report", "title"+str(n))
             cmd = config.get ( "report", "cmd"+str(n))
-            strstyle = config.get ( "report", "style"+str(n))
-            f_print_cmd(title, cmd, strstyle,save_as)
+            style = config.get ( "report", "style"+str(n))
+            filter = config.get ( "report", "filter"+str(n))
+            f_print_cmd(title, cmd, style,filter,save_as,debug)
         n += 1
 
     f_print_ending(save_as)
