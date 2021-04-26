@@ -107,7 +107,7 @@ def f_print_cmd(title,cmd,style,filter,save_as,debug):
 
     lines = os.popen(cmd).readlines()
     for line in lines:
-        row = line.strip().strip('(B[').strip('[4m[').strip('(B')
+        row = line.strip()
         if row:
             if isinstance(style,dict):
                 rows.append(row.split())
