@@ -3,26 +3,6 @@ Linux Report is a tool to help trouble shoot application base on linux.
 
 pip install prettytable
 
-if no internet:
-
-rpm -ivh python36-3.6.8-2.0.1.module+el8.3.0+el8+9688+bb1990d3.x86_64.rpm
-
-tar -zxvf  setuptools_scm-5.0.2.tar.gz
-
-cd /.../setuptools_scm-5.0.2/
-
-python3 setup.py build
-
-python3 setup.py install
-
-tar -zxvf  prettytable-2.1.0.tar.gz
-
-cd /.../prettytable-2.1.0/
-
-python3 setup.py build
-
-python3 setup.py install
-
 Edit application commands in linux_report.ini
 
 execute:
