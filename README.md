@@ -15,6 +15,10 @@ python3 linux_report.py -p linux_report.ini -s txt >linux_report.txt
 
 python3 linux_report.py -p linux_report.ini -s html >linux_report.html
 
+send email:
+
+python3 SendEmail3.py -p emailset.ini -f linux_report.txt
+
 use crontab regularly perform linux_report.sh,auto generate  report,and send email.
 
 Enjoy it! 
