@@ -10,6 +10,10 @@ Edit application commands in linux_report.ini
 A few sample Linux commands have been written in linux_report.ini,You can write commands to monitor business systems.
 
 linux_report.txt & linux_report.html is  execution result demo.
+example:
+
+![txt example](https://github.com/kinghows/Linux_Report/blob/master/txt.JPG)
+![html example](https://github.com/kinghows/Linux_Report/blob/master/html.JPG)
 
 execute:
 
