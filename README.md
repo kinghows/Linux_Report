@@ -23,6 +23,8 @@ python3 linux_report.py
 
 python3 linux_report.py -p linux_report.ini
 
+python3 linux_report.py -p linux_60s.ini (Brendan Gregg linux 60s )
+
 python3 linux_report.py -p linux_report.ini -s txt >linux_report.txt
 
 python3 linux_report.py -p linux_report.ini -s html >linux_report.html
